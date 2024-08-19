@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Authors>Giuseppe Zileni &lt;gzileni@hotmail.com&gt;</Authors>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>bin\Debug\net8.0\Gis.Net.Auth.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\net8.0\Gis.Net.Auth.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="gis.net" Version="8.0.7" />
+      <PackageReference Include="jose-jwt" Version="5.0.0" />
+      <PackageReference Include="jose-jwt-signed" Version="2.3.0" />
+      <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.0.1" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.1" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+    </ItemGroup>
+
+</Project>
