@@ -34,13 +34,13 @@ jobs:
       id: package_version
       uses: kzrnm/get-net-sdk-project-versions-action@v2
       with:
-          proj-path: Gis.Net/Gis.Net.Auth.csproj
+          proj-path: Gis.Net.Auth.csproj
     - name: Push Nuget Packages
       uses: EasyDesk/action-nuget-push@v1.0.0
       with:
         nuget-api-key: ${{ secrets.NUGET_TOKEN }}
         nuget-url: https://nuget.pkg.github.com/EMP-Projects/index.json
-        publish-dir: Gis.Net.Auth/bin/Release
+        publish-dir: bin/Release
     - name: Git Tag Action
       uses: cardinalby/git-tag-action@master
       env:
