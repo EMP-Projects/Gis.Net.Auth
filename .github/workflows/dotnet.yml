@@ -1,0 +1,50 @@
+
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Add Source Nuget
+      run: dotnet nuget add source --username ${{ secrets.NUGET_USERNAME }} --password ${{ secrets.NUGET_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/EMP-Projects/index.json"
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      id: build-nuget 
+      run: dotnet build --no-restore -c Release
+    - name: Pack
+      run: dotnet pack --no-build --configuration Release
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    - name: Get version
+      id: package_version
+      uses: kzrnm/get-net-sdk-project-versions-action@v2
+      with:
+          proj-path: Gis.Net.Auth.csproj
+    - name: Push Nuget Packages
+      uses: EasyDesk/action-nuget-push@v1.0.0
+      with:
+        nuget-api-key: ${{ secrets.NUGET_TOKEN }}
+        nuget-url: https://nuget.pkg.github.com/EMP-Projects/index.json
+        publish-dir: bin/Release
+    - name: Git Tag Action
+      uses: cardinalby/git-tag-action@master
+      env:
+        TAG: ${{ steps.package_version.outputs.package-version }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
