@@ -24,6 +24,12 @@ public abstract class AuthController : RootControllerBase
         AuthService = auth;
     }
 
+    /// <inheritdoc />
+    /// <summary>
+    /// Signs in a user with the provided login credentials.
+    /// </summary>
+    /// <param name="loginRequestDto">The login credentials of the user.</param>
+    /// <returns>An IActionResult representing the sign-in result.</returns>
     [HttpPost("signIn")]
     public virtual async Task<IActionResult> SignIn([FromBody] LoginRequestDto loginRequestDto)
     {
@@ -43,9 +49,13 @@ public abstract class AuthController : RootControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Gets the currently logged-in user.
     /// </summary>
-    /// <returns></returns>
+    /// <remarks>
+    /// Returns the <see cref="AuthUserDto"/> object representing the currently logged-in user.
+    /// If there is no logged-in user, a 401 Unauthorized response will be returned.
+    /// </remarks>
+    /// <returns>The currently logged-in user as an <see cref="IActionResult"/>.</returns>
     [HttpGet("me"), AuthByLogin]
     public virtual async Task<IActionResult> GetLoggedUser()
     {
@@ -61,6 +71,11 @@ public abstract class AuthController : RootControllerBase
         }
     }
 
+    /// <summary>
+    /// Signs up a user with the provided details.
+    /// </summary>
+    /// <param name="signUpRequestDto">The details of the user to sign up.</param>
+    /// <returns>An IActionResult representing the sign-up result.</returns>
     [HttpPost("signup")]
     public virtual async Task<IActionResult> SignUp([FromBody] ReducedUserRequestDto signUpRequestDto)
     {
@@ -81,7 +96,12 @@ public abstract class AuthController : RootControllerBase
             return SingleResultWithError<AuthUserDto>(ex.Message);
         }
     }
-    
+
+    /// <summary>
+    /// Sets the login credentials for a user.
+    /// </summary>
+    /// <param name="loginDto">The login credentials to be set.</param>
+    /// <returns>An IActionResult representing the result of setting the credentials.</returns>
     [HttpPost("credentials/set")]
     public virtual async Task<IActionResult> Credentials([FromBody] LoginDto loginDto)
     {
@@ -97,6 +117,11 @@ public abstract class AuthController : RootControllerBase
         }
     }
 
+    /// <summary>
+    /// Changes the password for the logged-in user.
+    /// </summary>
+    /// <param name="changePwdDto">The <see cref="ChangePasswordDto"/> object containing the old and new passwords.</param>
+    /// <returns>An <see cref="IActionResult"/> representing the result of the password change operation.</returns>
     [HttpPost("change/password"), AuthByLogin]
     public virtual async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePwdDto)
     {
@@ -117,6 +142,11 @@ public abstract class AuthController : RootControllerBase
         }
     }
 
+    /// <summary>
+    /// Changes the API key for the logged-in user.
+    /// </summary>
+    /// <param name="changeKeyDto">The data transfer object containing the necessary fields for changing the API key.</param>
+    /// <returns>Returns an IActionResult indicating the result of the change API key operation.</returns>
     [HttpPost("change/apikey"), AuthByLogin]
     public virtual async Task<IActionResult> ChangeApiKey([FromBody] ChangeApiKeyDto changeKeyDto)
     {
@@ -138,6 +168,14 @@ public abstract class AuthController : RootControllerBase
         }
     }
 
+    /// <summary>
+    /// Creates an API key token for the logged-in user.
+    /// </summary>
+    /// <returns>Returns a <see cref="Microsoft.AspNetCore.Mvc.OkResult"/> with a status code of 204 (No Content) if the API key token creation is successful.</returns>
+    /// <remarks>
+    /// This method generates an API key token for the authenticated user and saves it to the database.
+    /// If the API key token creation fails, the method returns a <see cref="ErrorResponse"/> with an error message.
+    /// </remarks>
     [HttpPatch("create-api-key")]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 401)]

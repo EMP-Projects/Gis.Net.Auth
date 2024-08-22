@@ -28,14 +28,30 @@ public abstract class AuthService<TModel, TDto, TQuery, TRequest, TContext> :
     private readonly ISessionInfoService _session;
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// The header name used for authorization during login.
+    /// </summary>
+    /// <remarks>
+    /// This property specifies the header name used for authorization during the login process.
+    /// </remarks>
     public string AuthorizationHeaderLogin { get; set; } = "Authorization";
+    /// <summary>
+    /// The name of the authorization header for API key authentication
+    /// </summary>
+    /// <remarks>
+    /// This property specifies the name of the authorization header that is used for API key authentication.
+    /// The value of this property is obtained from the "X-API-Key" header in the incoming HTTP request.
+    /// </remarks>
     public string AuthorizationHeaderApiKey { get; set; } = "X-API-Key";
 
     /// <inheritdoc />
-    protected AuthService(ILogger logger, IRepositoryCore<TModel, TDto, TQuery, TContext> repositoryCore, IConfiguration configuration)
+    protected AuthService(ILogger logger, IRepositoryCore<TModel, TDto, TQuery, TContext> repositoryCore, IConfiguration configuration, IAuthRepository repository, ISessionInfoService session)
         : base(logger, repositoryCore)
     {
+        _logger = logger;
         _configuration = configuration;
+        _repository = repository;
+        _session = session;
     }
 
     private void CheckIfLoggedUser(long id)
@@ -47,11 +63,11 @@ public abstract class AuthService<TModel, TDto, TQuery, TRequest, TContext> :
     /// <inheritdoc />
     public async Task SetCredentials(LoginDto login)
     {
-        // non posso modificare le credenziali dell'utente collegato
+        // I cannot modify the logged in user's credentials
         CheckIfLoggedUser(login.Id);
 
         if (login.Username is null || login.Password is null)
-            throw new Exception("E' necessario specificare username e password");
+            throw new Exception("It is necessary to specify username and password");
         
         await _repository.SetCredentials(login.Id, login.Username, login.Password);
     }
@@ -59,10 +75,10 @@ public abstract class AuthService<TModel, TDto, TQuery, TRequest, TContext> :
     /// <inheritdoc />
     public async Task ResetCredentials(LoginDto login, bool checkLoggedUser = true)
     {
-        // non posso modificare le credenziali dell'utente collegato
+        // I cannot modify the logged in user's credentials
         if (checkLoggedUser) CheckIfLoggedUser(login.Id);
-        // solo se il valore nel dto è uguale a key allora la cancellazione è intenzionale
-        Logger.LogDebug($"Resetto il campo username e password per l'utente con id {login.Id}");
+        // only if the value in the dto is equal to key then the deletion is intentional
+        Logger.LogDebug($"I reset the username and password field for the user with id {login.Id}");
         await _repository.ResetCredentials(login.Id);
     }
 
@@ -76,12 +92,6 @@ public abstract class AuthService<TModel, TDto, TQuery, TRequest, TContext> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<AuthUserDto> Login(string username, string password)
-    {
-        _session.LoggedUser = await _repository.SignIn(new LoginRequestDto { Username = username, Password = password });
-        return _session.LoggedUser;
-    }
-
     public virtual bool ExtractToken(string value, out string? token)
     {
         var tokenValues = value.Split(' ');
@@ -98,7 +108,8 @@ public abstract class AuthService<TModel, TDto, TQuery, TRequest, TContext> :
         var user = await _repository.GetAuthUserById(userId.Value);
         return user;
     }
-    
+
+    /// <inheritdoc />
     public async Task<AuthUserDto?> CheckApiKey(string apiKey) => await _repository.SignIn(new LoginRequestDto { ApiKeyToken = apiKey });
     
     /// <inheritdoc />
@@ -144,10 +155,20 @@ public abstract class AuthService<TModel, TDto, TQuery, TRequest, TContext> :
         return await _repository.ChangeApiKey(changeKeyDto);
     }
 
-    /// <inheritdoc />
-    public virtual async Task<int> SaveContext() => await GetRepository().SaveChanges();
-
+    /// <summary>
+    /// The secret key used for signing and validating JWT tokens.
+    /// </summary>
+    /// <remarks>
+    /// This property specifies the secret key used for signing and validating JWT tokens. It is used in the token generation process as part of the signing credentials.
+    /// </remarks>
     protected virtual string JwtSecret { get; set; } = "JwtBe4rerSecre7KEY";
+    
+    /// <summary>
+    /// The duration of the JWT token.
+    /// </summary>
+    /// <remarks>
+    /// This property specifies the duration of the JWT token. The token will remain valid for the duration specified here.
+    /// </remarks>
     protected virtual TimeSpan JwtDuration { get; set; } = TimeSpan.FromMinutes(60 * 18);
     
     /// <summary>
@@ -185,6 +206,11 @@ public abstract class AuthService<TModel, TDto, TQuery, TRequest, TContext> :
         return tokenHandler.WriteToken(token);
     }
 
+    /// <summary>
+    /// Extracts the user ID from a Jwt token.
+    /// </summary>
+    /// <param name="token">The Jwt token to extract the user ID from.</param>
+    /// <returns>The user ID extracted from the Jwt token, or null if the user ID cannot be extracted.</returns>
     protected long? GetUserIdFromJwtToken(string token)
     {
         JwtSecurityTokenHandler tokenHandler = new();

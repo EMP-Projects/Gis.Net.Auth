@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace Gis.Net.Auth;
 
+/// <summary>
+/// Provides methods for hashing and verifying passwords.
+/// </summary>
 public static class PasswordHasher
 {
     private const int Pbkdf2Iterations = 1000;
@@ -50,15 +53,15 @@ public static class PasswordHasher
             Buffer.BlockCopy(hashedPassword, 13, salt, 0, salt.Length);
 
             // Read the subkey (the rest of the payload): must be >= 128 bits
-            var subkeyLength = hashedPassword.Length - 13 - salt.Length;
-            if (subkeyLength < 128 / 8)
+            var subKeyLenght = hashedPassword.Length - 13 - salt.Length;
+            if (subKeyLenght < 128 / 8)
                 return false;
             
-            var expectedSubkey = new byte[subkeyLength];
+            var expectedSubkey = new byte[subKeyLenght];
             Buffer.BlockCopy(hashedPassword, 13 + salt.Length, expectedSubkey, 0, expectedSubkey.Length);
 
             // Hash the incoming password and verify it
-            var actualSubkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, subkeyLength);
+            var actualSubkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, subKeyLenght);
             
 #if NETSTANDARD2_0 || NETFRAMEWORK
             return ByteArraysEqual(actualSubkey, expectedSubkey);
@@ -82,14 +85,14 @@ public static class PasswordHasher
     {
         var salt = new byte[saltSize];
         rng.GetBytes(salt);
-        var subkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, numBytesRequested);
-        var outputBytes = new byte[13 + salt.Length + subkey.Length];
+        var subKey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, numBytesRequested);
+        var outputBytes = new byte[13 + salt.Length + subKey.Length];
         outputBytes[0] = 0x01; // format marker
         WriteNetworkByteOrder(outputBytes, 1, (uint)prf);
         WriteNetworkByteOrder(outputBytes, 5, (uint)iterCount);
         WriteNetworkByteOrder(outputBytes, 9, (uint)saltSize);
         Buffer.BlockCopy(salt, 0, outputBytes, 13, salt.Length);
-        Buffer.BlockCopy(subkey, 0, outputBytes, 13 + saltSize, subkey.Length);
+        Buffer.BlockCopy(subKey, 0, outputBytes, 13 + saltSize, subKey.Length);
         return outputBytes;
     }
 

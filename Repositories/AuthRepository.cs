@@ -153,7 +153,6 @@ public abstract class AuthRepository<TModel, TDto, TQuery, TContext> :
         if (userModel.ApiKeyToken.Equals(changeKeyDto.OldApiKey))
             throw new AuthenticationException("The ApiKey to be changed is invalid");
 
-        // creo Dto dell'utente per aggiornare i dati
         var userDto = Mapper.Map<TDto>(userModel);
 
         return await Update(
