@@ -21,6 +21,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    - name: Add Source Nuget
+      run: dotnet nuget add source --username ${{ secrets.NUGET_USERNAME }} --password ${{ secrets.NUGET_PWD }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/EMP-Projects/index.json"
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
