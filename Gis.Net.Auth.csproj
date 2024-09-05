@@ -5,8 +5,16 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Authors>Giuseppe Zileni &lt;gzileni@hotmail.com&gt;</Authors>
-        <Version>8.1.1</Version>
+        <Version>8.1.2</Version>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>Gis.Net.Auth</Title>
+        <Description>Libreria per Authenticazione</Description>
+        <Copyright>https://github.com/EMP-Projects/Gis.Net.Auth</Copyright>
+        <PackageProjectUrl>https://github.com/EMP-Projects/Gis.Net.Auth</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/EMP-Projects/Gis.Net.Auth/LICENSE.md</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/EMP-Projects/Gis.Net.Auth</RepositoryUrl>
+        <PackageTags>.net </PackageTags>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
